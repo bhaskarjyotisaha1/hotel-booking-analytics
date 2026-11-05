@@ -82,11 +82,6 @@ FROM hotel_bookings
 GROUP BY is_repeated_guest;
 
 
--- ============================================
--- DATA QUALITY AND VALIDATION
--- ============================================
-
-
 -- 11. Check missing values in important columns
 SELECT
     SUM(booking_id IS NULL) AS missing_booking_ids,
