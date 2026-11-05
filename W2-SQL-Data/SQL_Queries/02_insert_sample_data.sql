@@ -1,48 +1,77 @@
 
+-- 02_insert_sample_data.sql
+
 USE hotel_booking_analytics;
 
--- Insert test customers
+LOAD DATA LOCAL INFILE
+'C:/Users/YourWindowsUsername/Downloads/hospitality_bookings_with_1000_customers_updated(1).csv'
 
-INSERT INTO customers
-(customer_id, customer_state)
-VALUES
-('C1001', 'Telangana'),
-('C1002', 'Andhra Pradesh'),
-('C1003', 'Karnataka');
+INTO TABLE hotel_bookings
 
--- Insert test bookings
+CHARACTER SET utf8mb4
 
-INSERT INTO bookings
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+
+IGNORE 1 ROWS
+
 (
+    booking_id,
     customer_id,
+    gender,
+    age,
+    customer_city,
+    customer_state,
+    customer_type,
+    loyalty_tier,
+    is_canceled,
+    lead_time,
     arrival_year,
     arrival_month,
-    is_canceled,
-    reservation_status,
-    lead_time,
-    market_segment,
-    reserved_room_type,
-    average_daily_rate,
+    arrival_day,
     stays_in_weekend_nights,
     stays_in_week_nights,
+    reservation_status,
+    days_in_waiting_list,
+    adults,
+    children,
+    is_repeated_guest,
     previous_cancellations,
-    is_repeated_guest
+    previous_bookings_not_canceled,
+    reserved_room_type,
+    assigned_room_type,
+    average_daily_rate,
+    booking_changes,
+    market_segment,
+    total_nights,
+    revenue,
+    lead_group,
+    lost_revenue,
+    age_group,
+    @arrival_date,
+    @arrival_weekday,
+    has_children,
+    has_weekend_stay,
+    past_cancel_flag,
+    room_changed
 )
-VALUES
-('C1001', 2017, 'July', 0, 'Check-Out',
- 20, 'Online TA', 'A', 120.00, 1, 2, 0, 0),
 
-('C1002', 2017, 'July', 1, 'Canceled',
- 90, 'Offline TA/TO', 'B', 150.00, 2, 3, 1, 0),
+SET
+    arrival_date = STR_TO_DATE(
+        NULLIF(@arrival_date, ''),
+        '%Y-%m-%d'
+    ),
+    arrival_weekday = NULLIF(@arrival_weekday, '');
 
-('C1001', 2017, 'August', 0, 'Check-Out',
- 15, 'Direct', 'A', 100.00, 1, 1, 0, 1),
+-- Verify actual loaded data
+SELECT COUNT(*) AS total_booking_records
+FROM hotel_bookings;
 
-('C1003', 2018, 'January', 1, 'Canceled',
- 120, 'Online TA', 'D', 180.00, 2, 4, 2, 0);
+SELECT COUNT(DISTINCT customer_id) AS unique_customers
+FROM hotel_bookings;
 
--- Verify inserted records
-
-SELECT * FROM customers;
-
-SELECT * FROM bookings;
+SELECT *
+FROM hotel_bookings
+LIMIT 10;
