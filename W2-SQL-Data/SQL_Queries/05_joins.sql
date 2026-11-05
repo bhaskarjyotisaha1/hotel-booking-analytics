@@ -1,55 +1,45 @@
 
+-- 05_joins.sql
+
 USE hotel_booking_analytics;
 
--- 1. INNER JOIN
-
+-- 1. SELF JOIN:
+-- Compare different bookings by the same customer.
 SELECT
-    c.customer_id,
-    c.customer_state,
-    b.arrival_year,
-    b.arrival_month,
-    b.is_canceled,
-    b.market_segment,
-    b.average_daily_rate
-FROM customers c
-INNER JOIN bookings b
-ON c.customer_id = b.customer_id;
+    b1.customer_id,
+    b1.booking_id AS first_booking_id,
+    b2.booking_id AS second_booking_id,
+    b1.arrival_year AS first_arrival_year,
+    b2.arrival_year AS second_arrival_year,
+    b1.is_canceled AS first_booking_cancelled,
+    b2.is_canceled AS second_booking_cancelled
+FROM hotel_bookings b1
+INNER JOIN hotel_bookings b2
+    ON b1.customer_id = b2.customer_id
+   AND b1.booking_id < b2.booking_id
+LIMIT 100;
 
--- 2. LEFT JOIN
-
+-- 2. Compare booking records for repeat customers
 SELECT
-    c.customer_id,
-    c.customer_state,
-    b.booking_id,
-    b.is_canceled
-FROM customers c
-LEFT JOIN bookings b
-ON c.customer_id = b.customer_id;
+    b1.customer_id,
+    b1.booking_id,
+    b2.booking_id AS another_booking_id,
+    b1.reservation_status,
+    b2.reservation_status AS another_booking_status
+FROM hotel_bookings b1
+INNER JOIN hotel_bookings b2
+    ON b1.customer_id = b2.customer_id
+   AND b1.booking_id < b2.booking_id
+WHERE b1.is_repeated_guest = 1
+LIMIT 100;
 
--- 3. Customer booking count
-
+-- 3. Customer-level booking summary using self-join
 SELECT
-    c.customer_id,
-    c.customer_state,
-    COUNT(b.booking_id) AS total_bookings
-FROM customers c
-LEFT JOIN bookings b
-ON c.customer_id = b.customer_id
-GROUP BY
-    c.customer_id,
-    c.customer_state;
-
--- 4. Customer cancellation count
-
-SELECT
-    c.customer_id,
-    c.customer_state,
-    COUNT(b.booking_id) AS total_bookings,
-    SUM(b.is_canceled) AS cancelled_bookings
-FROM customers c
-INNER JOIN bookings b
-ON c.customer_id = b.customer_id
-GROUP BY
-    c.customer_id,
-    c.customer_state;
-
+    a.customer_id,
+    COUNT(DISTINCT a.booking_id) AS customer_booking_count
+FROM hotel_bookings a
+INNER JOIN hotel_bookings b
+    ON a.customer_id = b.customer_id
+GROUP BY a.customer_id
+HAVING COUNT(DISTINCT a.booking_id) > 1
+ORDER BY customer_booking_count DESC;
