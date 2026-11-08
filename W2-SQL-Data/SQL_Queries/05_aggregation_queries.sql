@@ -77,3 +77,31 @@ WHERE Customer_ID IS NOT NULL
 GROUP BY Customer_ID
 HAVING COUNT(*) > 1
 ORDER BY booking_count DESC;
+
+-- Total booking records
+SELECT COUNT(*) AS total_bookings
+FROM hotel_bookings;
+
+-- Cancellation summary
+SELECT
+    CASE
+        WHEN is_canceled = 1 THEN 'Cancelled'
+        WHEN is_canceled = 0 THEN 'Not Cancelled'
+        ELSE 'Invalid'
+    END AS booking_status,
+    COUNT(*) AS total_records
+FROM hotel_bookings
+GROUP BY is_canceled;
+
+-- Cancellation percentage
+SELECT
+    COUNT(*) AS total_bookings,
+    SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END)
+        AS cancelled_bookings,
+    SUM(CASE WHEN is_canceled = 0 THEN 1 ELSE 0 END)
+        AS not_cancelled_bookings,
+    ROUND(
+        SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END)
+        * 100.0 / COUNT(*), 2
+    ) AS cancellation_percentage
+FROM hotel_bookings;
