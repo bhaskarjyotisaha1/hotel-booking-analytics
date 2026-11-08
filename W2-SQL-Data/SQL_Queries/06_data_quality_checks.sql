@@ -57,21 +57,17 @@ FROM hotel_bookings
 WHERE average_daily_rate < 0;
 
 
--- 9. Invalid cancellation values
-SELECT COUNT(*) AS invalid_cancellation_records
-FROM hotel_bookings
-WHERE is_canceled NOT IN (0, 1)
-   OR is_canceled IS NULL;
 
-
--- 10. Invalid age
-SELECT COUNT(*) AS invalid_age_records
-FROM hotel_bookings
-WHERE Age < 0 OR Age > 120;
-
-
--- 11. Missing state
-SELECT COUNT(*) AS missing_state_records
-FROM hotel_bookings
-WHERE Customer_State IS NULL
-   OR TRIM(Customer_State) = '';
+SELECT
+    COUNT(*) AS total_records,
+    COUNT(DISTINCT booking_id) AS unique_booking_ids,
+    COUNT(*) - COUNT(DISTINCT booking_id) AS duplicate_id_difference,
+    SUM(booking_id IS NULL OR TRIM(booking_id) = '')
+        AS missing_booking_ids,
+    SUM(Customer_ID IS NULL OR TRIM(Customer_ID) = '')
+        AS missing_customer_ids,
+    SUM(is_canceled IS NULL OR is_canceled NOT IN (0,1))
+        AS invalid_cancellation_values,
+    SUM(average_daily_rate < 0)
+        AS negative_adr_records
+FROM hotel_bookings;
